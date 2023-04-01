@@ -10,8 +10,21 @@
 #include <Hash.h>
 
 #include <DNSServer.h>
-#include <ESP8266WebServer.h>
-#include <WiFiManager.h>        //https://github.com/tzapu/WiFiManager
+#include <ESPAsyncTCP.h>
+#include <ESPAsyncWebServer.h>
+//#include <ESP8266WebServer.h>
+//#include <WiFiManager.h>        //https://github.com/tzapu/WiFiManager
+
+#include "LittleFS.h"
+
+// Replace with your network credentials
+#include "passwords.h"
+// const char* ssid = "ssid";
+// const char* password = "password";
+
+
+// Create AsyncWebServer object on port 80
+AsyncWebServer server(80);
 
 WebSocketsServer webSocket = WebSocketsServer(81);
 
@@ -52,6 +65,30 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t lenght
 }
 
 
+
+// Initialize LittleFS
+void initFS() {
+  if (!LittleFS.begin()) {
+    Serial.println("An error has occurred while mounting LittleFS");
+  }
+  Serial.println("LittleFS mounted successfully");
+}
+
+// Initialize WiFi
+void initWiFi() {
+  WiFi.mode(WIFI_STA);
+  WiFi.begin(ssid, password);
+  Serial.print("Connecting to WiFi ..");
+  while (WiFi.status() != WL_CONNECTED) {
+    Serial.print('.');
+    delay(1000);
+  }
+  
+  Serial.println(WiFi.localIP());
+}
+
+
+
 String inputString = "";         // a string to hold incoming data
 boolean stringComplete = false;  // whether the string is complete
 
@@ -61,30 +98,24 @@ void setup() {
   Serial.println();
   Serial.println();
   Serial.println();
+  
+  initWiFi();
+  initFS();
 
-  //WiFiManager
-  //Local intialization. Once its business is done, there is no need to keep it around
-  WiFiManager wifiManager;
+  // Web Server Root URL
+  server.on("/", HTTP_GET, [](AsyncWebServerRequest *request){
+    request->send(LittleFS, "/index.htm", "text/html");
+  });
 
-  //reset settings - for testing
-  //wifiManager.resetSettings();
-
-  //tries to connect to last known settings
-  //if it does not connect it starts an access point with the specified name
-  //here  "AutoConnectAP" with password "password"
-  //and goes into a blocking loop awaiting configuration
-  if (!wifiManager.autoConnect("AutoConnectAP", "password")) {
-    Serial.println("failed to connect, we should reset as see if it connects");
-    delay(3000);
-    ESP.reset();
-    delay(5000);
-  }
+  server.serveStatic("/", LittleFS, "/");
+  
+  // Start server
+  server.begin();
 
   webSocket.begin();
   webSocket.onEvent(webSocketEvent);
 
   Serial.println("START MIRRORING SERIAL");
-  Serial.println(WiFi.localIP());
 
   inputString.reserve(256);
 }
