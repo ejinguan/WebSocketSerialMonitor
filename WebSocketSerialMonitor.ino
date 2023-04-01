@@ -1,14 +1,12 @@
 /*
    WebSocketServer.ino
-
-    Created on: 22.05.2015
-
+   Modified from https://github.com/tzapu/WebSocketSerialMonitor
 */
 
 #include <Arduino.h>
 
 #include <ESP8266WiFi.h>
-#include <WebSocketsServer.h>   //https://github.com/Links2004/arduinoWebSockets/tree/async
+#include <WebSocketsServer.h>   //https://github.com/Links2004/arduinoWebSockets/
 #include <Hash.h>
 
 #include <DNSServer.h>
@@ -29,7 +27,8 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t lenght
         Serial.printf("[%u] Connected from %s url: %s\n", num, ip.toString().c_str(), payload);
 
         // send message to client
-        webSocket.sendTXT(num, "Connected to Serial on " + WiFi.localIP().toString() + "\n");
+        String payload = "Connected to Serial on " + WiFi.localIP().toString() + "\n";
+        webSocket.sendTXT(num, payload);
       }
       break;
     case WStype_TEXT:
@@ -57,10 +56,7 @@ String inputString = "";         // a string to hold incoming data
 boolean stringComplete = false;  // whether the string is complete
 
 void setup() {
-  // Serial.begin(921600);
   Serial.begin(115200);
-
-  //Serial.setDebugOutput(true);
 
   Serial.println();
   Serial.println();
@@ -72,7 +68,6 @@ void setup() {
 
   //reset settings - for testing
   //wifiManager.resetSettings();
-
 
   //tries to connect to last known settings
   //if it does not connect it starts an access point with the specified name
@@ -91,8 +86,7 @@ void setup() {
   Serial.println("START MIRRORING SERIAL");
   Serial.println(WiFi.localIP());
 
-  //  Serial.setTimeout(500);
-    inputString.reserve(256);
+  inputString.reserve(256);
 }
 
 void serialEvent() {
@@ -122,15 +116,5 @@ void loop() {
     Serial.println(line);
   }
   webSocket.loop();
-  /*
-    String line = Serial.readStringUntil('\n');
-    if (line.length() > 0) {
-      // add back line ending
-      line += '\n';
-      webSocket.broadcastTXT(line);
-      Serial.print(line);
-    }
-    webSocket.loop();
-  */
+  
 }
-
