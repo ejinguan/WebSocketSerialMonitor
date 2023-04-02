@@ -26,6 +26,7 @@
 // Create AsyncWebServer object on port 80
 AsyncWebServer server(80);
 
+// Create WebSocketsServer object on port 81
 WebSocketsServer webSocket = WebSocketsServer(81);
 
 void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t lenght) {
@@ -138,7 +139,7 @@ void loop() {
   if (stringComplete) {
     
     String line = inputString;
-       // clear the string:
+    // Clear the string:
     inputString = "";
     stringComplete = false;
 
