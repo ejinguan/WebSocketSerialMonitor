@@ -29,7 +29,7 @@ AsyncWebServer server(80);
 // Create WebSocketsServer object on port 81
 WebSocketsServer webSocket = WebSocketsServer(81);
 
-void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t lenght) {
+void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t length) {
 
   switch (type) {
     case WStype_DISCONNECTED:
@@ -46,7 +46,11 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t lenght
       }
       break;
     case WStype_TEXT:
-      Serial.printf("[%u] get Text: %s\n", num, payload);
+      if (length > 0) {
+        Serial.printf("[%u] get Text: %s\n", num, payload);
+      } else {
+        Serial.printf("[%u] get Text: zero length data\n", num);
+      }
 
       // send message to client
       // webSocket.sendTXT(num, "message here");
@@ -55,11 +59,15 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t lenght
       // webSocket.broadcastTXT("message here");
       break;
     case WStype_BIN:
-      Serial.printf("[%u] get binary lenght: %u\n", num, lenght);
-      hexdump(payload, lenght);
+      if (length > 0) {
+        Serial.printf("[%u] get binary length: %u\n", num, length);
+        hexdump(payload, length);
+      } else {
+        Serial.printf("[%u] get binary length: zero length data\n", num);
+      }
 
       // send message to client
-      // webSocket.sendBIN(num, payload, lenght);
+      // webSocket.sendBIN(num, payload, length);
       break;
   }
 
