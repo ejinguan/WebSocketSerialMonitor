@@ -29,6 +29,11 @@
 	</form>
 
 	<script type="text/javascript">
+		// Read the host IP address using document.location.hostname
+		document.getElementById('host').value = "ws://" + document.location.hostname + ":81/ws";
+	</script>
+
+	<script type="text/javascript">
 		const PING_INTERVAL_MILLIS = 5000;
 
 		var output = document.getElementById('output');
